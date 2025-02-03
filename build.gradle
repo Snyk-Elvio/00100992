@@ -1,0 +1,54 @@
+apply plugin: 'java' // Or 'application' if it's an executable project
+
+repositories {
+    mavenCentral() // Or other repositories you need
+}
+
+dependencies {
+    implementation 'com.example:library-a:1.0.0' // Example dependency
+    implementation 'com.example:library-b:2.1.0' // Another example dependency
+
+    // Example of excluding transitive dependencies
+    implementation('com.example:library-c:1.5.0') {
+        exclude group: 'com.example', module: 'unwanted-module' // Exclude a specific module
+        exclude group: 'org.apache.commons', module: 'commons-lang3' //Exclude by group and module
+    }
+
+    // Example of excluding a dependency entirely (less common, but possible)
+    // configurations {
+    //     implementation {
+    //         exclude group: 'com.example', module: 'library-d'
+    //     }
+    // }
+    // implementation 'com.example:library-d:1.2.0' // This will now be effectively ignored
+
+    // Example of excluding a dependency based on configuration (e.g., testCompile)
+    testImplementation('junit:junit:4.13.2') {
+        exclude group: 'org.hamcrest', module: 'hamcrest-core' // Exclude hamcrest-core in tests
+    }
+
+    // Example of excluding a dependency from a specific configuration
+    implementation('com.example:library-e:1.0') {
+        exclude group: 'com.google.guava', module: 'guava' // Exclude Guava for this dependency
+    }
+}
+
+
+// Example of excluding a particular transitive dependency across all configurations
+configurations.all {
+    exclude group: 'org.slf4j', module: 'slf4j-api' // Example: exclude slf4j-api everywhere
+}
+
+
+// If you have subprojects, you might want similar exclusions in their build.gradle files.
+// Or you can configure common exclusions in the root project's build.gradle and have them
+// apply to all subprojects:
+
+// In root project build.gradle:
+// subprojects {
+//     configurations.all {
+//         exclude group: 'commons-collections', module: 'commons-collections' // Example
+//     }
+// }
+
+// Example sourceSets block to
