@@ -1,54 +1,62 @@
-apply plugin: 'java' // Or 'application' if it's an executable project
+apply plugin: 'java'
 
 repositories {
-    mavenCentral() // Or other repositories you need
+    mavenCentral()
 }
 
 dependencies {
-    implementation 'com.example:library-a:1.0.0' // Example dependency
-    implementation 'com.example:library-b:2.1.0' // Another example dependency
+    // A common library, might have transitive deps we want to control
+    implementation 'com.google.guava:guava:31.1-jre'
 
-    // Example of excluding transitive dependencies
-    implementation('com.example:library-c:1.5.0') {
-        exclude group: 'com.example', module: 'unwanted-module' // Exclude a specific module
-        exclude group: 'org.apache.commons', module: 'commons-lang3' //Exclude by group and module
+    // Another library that might bring in unwanted dependencies
+    implementation 'org.apache.commons:commons-text:1.10.0'
+
+    // Example of excluding a specific transitive dependency
+    implementation('org.springframework.boot:spring-boot-starter-web:3.1.0') {
+        exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api' // Exclude Tomcat annotations
     }
 
-    // Example of excluding a dependency entirely (less common, but possible)
+    // Example of excluding a dependency entirely (less common) -  Let's say we don't want slf4j-simple
     // configurations {
     //     implementation {
-    //         exclude group: 'com.example', module: 'library-d'
+    //         exclude group: 'org.slf4j', module: 'slf4j-simple'
     //     }
     // }
-    // implementation 'com.example:library-d:1.2.0' // This will now be effectively ignored
+    // implementation 'org.slf4j:slf4j-simple:2.0.7' // This would be ignored due to the exclusion above
 
-    // Example of excluding a dependency based on configuration (e.g., testCompile)
-    testImplementation('junit:junit:4.13.2') {
-        exclude group: 'org.hamcrest', module: 'hamcrest-core' // Exclude hamcrest-core in tests
+    // Example: Force a specific version of a transitive dependency (if you have version conflicts)
+    configurations.all {
+        resolutionStrategy {
+            force 'com.fasterxml.jackson.core:jackson-databind:2.15.2' // Example: force Jackson version
+        }
     }
 
-    // Example of excluding a dependency from a specific configuration
-    implementation('com.example:library-e:1.0') {
-        exclude group: 'com.google.guava', module: 'guava' // Exclude Guava for this dependency
+    // Example: Exclude a dependency from a specific configuration (e.g., test)
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.3') {
+        exclude group: 'org.apiguardian', module: 'apiguardian-api'
+        exclude group: 'org.opentest4j', module: 'opentest4j'
+        exclude group: 'net.bytebuddy', module: 'byte-buddy'
+
+    }
+
+    // Another dependency where we exclude a transitive dep
+    implementation('com.squareup.okhttp3:okhttp:4.11.0') {
+        exclude group: 'com.squareup.okio', module: 'okio' // Exclude Okio
+    }
+
+
+    // Example: Exclude a transitive dependency from ALL configurations
+    configurations.all {
+        exclude group: 'commons-collections', module: 'commons-collections' // Example: exclude commons-collections everywhere
     }
 }
 
 
-// Example of excluding a particular transitive dependency across all configurations
-configurations.all {
-    exclude group: 'org.slf4j', module: 'slf4j-api' // Example: exclude slf4j-api everywhere
+// Example sourceSets exclusion (for files, not dependencies)
+sourceSets {
+    main {
+        java {
+            exclude '**/UnusedClass.java' // Exclude a specific file
+        }
+    }
 }
-
-
-// If you have subprojects, you might want similar exclusions in their build.gradle files.
-// Or you can configure common exclusions in the root project's build.gradle and have them
-// apply to all subprojects:
-
-// In root project build.gradle:
-// subprojects {
-//     configurations.all {
-//         exclude group: 'commons-collections', module: 'commons-collections' // Example
-//     }
-// }
-
-// Example sourceSets block to
